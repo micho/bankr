@@ -1,6 +1,7 @@
 require 'bundler'
 Bundler.setup
 require 'bankr'
+require 'json'
 
 VALID_DATA = YAML.load( File.open('spec/support/valid_data.yml') )
 
@@ -20,7 +21,7 @@ first_account = accounts[0]
 puts "...ok" unless first_account.nil?
 
 puts "Fetching movements for the current month..."
-movements = a._movements_for(first_account)
+movements = a._movements_for(first_account, 1.month.ago)
 puts movements.inspect
 puts "...ok. Fetched #{movements.size} movements." unless movements.empty? or movements.nil?
 
@@ -29,8 +30,10 @@ pp movements.last
 
 puts "All movements statements:"
 pp movements.map(&:statement)
+pp movements.map(&:statement).to_json
 
 csv = Bankr::Outputs::CSV.new(movements)
 p "Exporting movements to #{csv.filename}..."
 csv.write
+pp csv.to_json
 system("cat #{csv.filename}")
